@@ -1,8 +1,9 @@
-import numpy as np
 from collections import defaultdict
 
-class Agent:
+import numpy as np
 
+
+class Agent:
     def __init__(self, nA=6):
         """Initialize agent.
 
@@ -12,20 +13,20 @@ class Agent:
         """
         self.nA = nA
         self.Q = defaultdict(lambda: np.zeros(self.nA))
-        self.i_episode = 1  # Episode number
-        self.gamma = 0.9    # Future discount rate
-        self.alpha = 0.1   # Learning rate
+        self.i_episode = 1              # Episode number
+        self.gamma = 0.9                # Future discount rate
+        self.alpha = 0.2                # Learning rate
+        self.alpha_decay_rate = 0.00001
 
     def _generate_policy(self, state):
         """Generate epsilon-greedy policy."""
-        #epsilon = 1 / self.t ** 0.6
-        epsilon = 1 / self.i_episode ** 0.5
+        epsilon = 1 / self.i_episode ** 1.0
         policy = np.ones(self.nA) * epsilon / self.nA
         greedy_action = np.argmax(self.Q[state])
         policy[greedy_action] = 1 - epsilon + epsilon / self.nA
         return policy
 
-    def select_action(self, state):
+    def select_action(self, state, epsilon_greedy=False):
         """Given the state, select an action.
 
         Params
@@ -36,9 +37,13 @@ class Agent:
         =======
         - action: an integer, compatible with the task's action space
         """
-        # Epsilon-greedy policy
-        policy = self._generate_policy(state)
-        return np.random.choice(self.nA, p=policy)
+        if epsilon_greedy:
+            # Epsilon-greedy policy
+            policy = self._generate_policy(state)
+            return np.random.choice(self.nA, p=policy)
+        else:
+            # Greedy policy.
+            return np.argmax(self.Q[state])
 
     def step(self, state, action, reward, next_state, done):
         """Update the agent's knowledge, using the most recently sampled tuple.
@@ -56,5 +61,5 @@ class Agent:
         sarsa_max_reward = np.max(self.Q[next_state])
         self.Q[state][action] += self.alpha * (reward + self.gamma * sarsa_max_reward - self.Q[state][action])
         if done:
-            #print('\n', 1 / self.i_episode ** 0.5, '\n')
+            self.alpha = max(0, self.alpha - self.alpha_decay_rate)
             self.i_episode += 1
