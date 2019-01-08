@@ -4,6 +4,7 @@ import numpy as np
 
 
 class Agent:
+
     def __init__(self, nA=6):
         """Initialize agent.
 
@@ -56,10 +57,13 @@ class Agent:
         - next_state: the current state of the environment
         - done: whether the episode is complete (True or False)
         """
-        # Update Q-table using Expected Sarsa.
-        expected_sarsa_reward = np.dot(self.Q[next_state], self._generate_policy(next_state))
-        sarsa_max_reward = np.max(self.Q[next_state])
-        self.Q[state][action] += self.alpha * (reward + self.gamma * sarsa_max_reward - self.Q[state][action])
         if done:
+            # Do not count accumulated future reward.
+            self.Q[state][action] += self.alpha * (reward - self.Q[state][action])
             self.alpha = max(0, self.alpha - self.alpha_decay_rate)
             self.i_episode += 1
+        else:
+            # Update Q-table using Expected Sarsa.
+            expected_sarsa_reward = np.dot(self.Q[next_state], self._generate_policy(next_state))
+            sarsa_max_reward = np.max(self.Q[next_state])
+            self.Q[state][action] += self.alpha * (reward + self.gamma * sarsa_max_reward - self.Q[state][action])
