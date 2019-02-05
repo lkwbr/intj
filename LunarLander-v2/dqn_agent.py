@@ -86,24 +86,21 @@ class Agent():
         """
         states, actions, rewards, next_states, dones = experiences
 
-        # Compute and minimize loss using batch gradient descent.
-        criterion = nn.MSELoss()
-        for state, action, reward, next_state, done in experiences:
-            y_hat = reward
-            if not done:
-                # Forward pass with target net and next state
-                target_action_value = torch.max(qnetwork_target.forward(next_state))
-                y_hat += reward + gamma * target_action_value
-            
-            # Get value at output index `action`.
-            local_action_value = qnetwork_local.forward(state)[action]
-            
-            # Gradient descent
-            self.optimizer.zero_grad()
-            loss = criterion(y_hat.float(), y.float())
-            loss.backward()
+        # Get max predicted Q values (for next states) from target model.
+        Q_targets_next = self.qnetwork_target(next_states).detach().max(1)[0].unsqueeze(1)
         
-        # Perform actual weight update.
+        # Compute Q targets for current states.
+        Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
+
+        # Get expected Q values from local model.
+        Q_expected = self.qnetwork_local(states).gather(1, actions)
+
+        # Compute loss.
+        loss = F.mse_loss(Q_expected, Q_targets)
+        
+        # Minimize the loss.
+        self.optimizer.zero_grad()
+        loss.backward()
         self.optimizer.step()
 
         # Now, update target network.
