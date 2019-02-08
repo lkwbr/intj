@@ -5,6 +5,9 @@ import torch.nn.functional as F
 class QNetwork(nn.Module):
     """Actor (Policy) Model."""
 
+    FC1_UNITS = 64
+    FC2_UNITS = 64
+
     def __init__(self, state_size, action_size, seed):
         """Initialize parameters and build model.
         Params
@@ -18,12 +21,12 @@ class QNetwork(nn.Module):
         self.action_size = action_size
         self.seed = torch.manual_seed(seed)
         self._init_nn()
-   
+
     def _init_nn(self):
         """Initialize fully-connected neural network."""
-        self.fc1 = torch.nn.Linear(self.state_size, self.state_size * 2)
-        self.fc2 = torch.nn.Linear(self.state_size * 2, self.state_size * 2)
-        self.fc3 = torch.nn.Linear(self.state_size * 2, self.action_size)
+        self.fc1 = torch.nn.Linear(self.state_size, QNetwork.FC1_UNITS)
+        self.fc2 = torch.nn.Linear(QNetwork.FC1_UNITS, QNetwork.FC2_UNITS)
+        self.fc3 = torch.nn.Linear(QNetwork.FC2_UNITS, self.action_size)
 
     def forward(self, state):
         """Build a network that maps state -> action values."""
