@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import abc
 import os
@@ -13,6 +15,7 @@ import torch.optim as optim
 from model import QNetwork
 
 
+# Hyperparameters
 BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 64         # minibatch size
 GAMMA = 0.99            # discount factor

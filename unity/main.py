@@ -1,4 +1,7 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
+import argparse
 from collections import namedtuple, deque
 import random
 
@@ -13,8 +16,15 @@ from agent import DqnAgent
 from env import UnityAgentEnvironment
 
 
+# TODO: Resolve issue with not being able to open environments in the
+# same Python session.
+
+# TODO: Use `statsmodel` and .yaml files to set network parameters. Makes it
+# more modular.
+
+
 def dqn_train(n_episodes=2000, max_t=1000, eps_start=1.0, eps_end=0.01,
-        eps_decay=0.995, seed=7):
+        eps_decay=0.995, seed=7, plot=True):
     """Train a Deep Q-Network to play the Unity 'banana' environment."""
     print('TRAINING DQN')
     # Setup environment and agent.
@@ -51,8 +61,10 @@ def dqn_train(n_episodes=2000, max_t=1000, eps_start=1.0, eps_end=0.01,
             print('\rEpisode {}\tAverage Score: {:.2f}'.format( \
                                             i_episode, np.mean(scores_window)))
     # Fin: print score and save agent policy.
-    print("Score: {}".format(score))
+    print("\rScore: {}".format(score))
     agent.save_policy()
+    if plot:
+        plot_scores('Training Scores', scores)
     env.close()
     return agent
 
@@ -78,19 +90,30 @@ def dqn_test(n_episodes=2, max_t=1000, seed=7, plot=True):
         print('Episode %d score: %f' % (i_episode, scores[-1]))
     print('Average score: %f' % np.mean(np.array(scores)))
     if plot:
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        plt.plot(np.arange(len(scores)), scores)
-        plt.ylabel('Score')
-        plt.xlabel('Episode #')
-        plt.show()
+        plot_scores('Testing Scores', scores)
     env.close()
 
+def plot_scores(title, scores):
+    plt.title(title)
+    plt.title('DQN', loc='left')
+    plt.plot(np.arange(1, len(scores) + 1), scores)
+    plt.ylabel('Score')
+    plt.xlabel('Episode #')
+    plt.show()
+
 def main():
-    # TODO: Resolve issue with not being able to open environments in the
-    # same Python session.
-    _ = dqn_train()
-    # dqn_test()
+    """Entry point into program."""
+    # Argument parsing
+    parser = argparse.ArgumentParser(description='Train and test a DQN agent.')
+    parser.add_argument('--train', help='Train the agent.', \
+                        action='store_true')
+    parser.add_argument('--test', help='Test the agent.', \
+                        action='store_true')
+    args = parser.parse_args()
+    if args.train:
+        _ = dqn_train()
+    if args.test:
+        dqn_test()
 
 
 if __name__ == '__main__':
