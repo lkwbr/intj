@@ -24,7 +24,7 @@ from env import UnityAgentEnvironment
 
 
 def dqn_train(n_episodes=2000, max_t=1000, eps_start=1.0, eps_end=0.01,
-        eps_decay=0.995, seed=7, plot=True):
+              eps_decay=0.995, seed=7, plot=True):
     """Train a Deep Q-Network to play the Unity 'banana' environment."""
     print('TRAINING DQN')
     # Setup environment and agent.
